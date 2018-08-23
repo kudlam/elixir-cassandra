@@ -116,6 +116,11 @@ defmodule Cassandra.Session.Executor do
         Cache.delete(cache, cache_key(statement, ip))
         run(statement, options, cache)
 
+      {:error, %Cassandra.ConnectionError{} = error} ->
+        Logger.error("#{__MODULE__} got connection error: #{inspect error}")
+        Process.exit(connection,:kill)
+        run(%Statement{statement | connections: connections}, options, cache)
+
       {:error, %CQL.Error{} = error} ->
         error
 
